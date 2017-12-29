@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Sender extends Thread{
 
-	//private Semaphore sem;
+	private Semaphore sem;
 	
     private static int threadCount = 0;
     private final int id = threadCount++;
@@ -25,8 +25,8 @@ public class Sender extends Thread{
 	 
 	 
 	   
-	 Sender(/*Semaphore sem, */String  pingResourse, int priority, long startTime, int workTime){
-	     //this.sem=sem;
+	 Sender(Semaphore sem, String  pingResourse, int priority, long startTime, int workTime){
+	     this.sem=sem;
 	     this.setPriority(priority);
 	     this.setPingResourse(pingResourse);
 	     this.setWorkTime(workTime);
@@ -84,19 +84,19 @@ public class Sender extends Thread{
 //	}
 
 	public void run(){
-		
-		
         try{
         	
            // System.out.println(id + " ожидает разрешение");
-            //sem.acquire();
+            sem.acquire();
  
             long test ;
 	        while(( (new Date().getTime()-startTime))/1000 != workTime) { 
 
 	            Pinging ping = new Pinging();
 	            ping.setAddress(pingResourse);
-	    		System.out.println("Thread №"+id+" - "+new Date(System.currentTimeMillis())+" - "+ping.testingAvailabilityOfResource());
+	            //address + "--<is reachable>"
+	            //address + "--<isn't reachable>"
+	    		System.out.println("Thread №" + id + " - " + new Date(System.currentTimeMillis())+" - "+ping.testingAvailabilityOfResource());
 	    		
 	    		 TimeUnit.MILLISECONDS.sleep(interval);
 	        }  
@@ -108,7 +108,7 @@ public class Sender extends Thread{
         
         //System.out.println(id + " освобождает разрешение");
         
-        //sem.release();
+        sem.release();
     }
 	
 }

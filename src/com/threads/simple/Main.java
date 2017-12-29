@@ -64,7 +64,7 @@ public class Main {
 		
 			 for( Map<String, String> res : resourse) {
 				 //System.out.println(res);
-				 Sender name = new Sender(res.get("address"), Integer.parseInt(res.get("priority")), start, listeningTime);
+				 Sender name = new Sender(sem, res.get("address"), Integer.parseInt(res.get("priority")), start, listeningTime);
 				 name.start();
 				
 			}

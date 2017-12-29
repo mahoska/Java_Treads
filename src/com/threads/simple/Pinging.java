@@ -18,24 +18,22 @@ public class Pinging {
 	}
 
 
-	public String testingAvailabilityOfResource() {
-		StringBuffer result = new StringBuffer();
+	public boolean testingAvailabilityOfResource() {
+		boolean result;
 	    try {
 	      InetAddress inet = InetAddress.getByName(address);
 	      System.out.println("Sending Ping Request to " + address);
 	      if (inet.isReachable(TIMEOUT)){
-	    	  result.append(address + "--<is reachable>");
+	    	 return true;
 	      } else {
-	    	  result.append(address + "--<isn't reachable>");
+	    	  return false;
 	      }
-	    } catch(UnknownHostException ex){
-	    	  //System.out.println(ex.toString()); 
+	    } catch(UnknownHostException ex){ 
+	    		return false;
 	    }
 	    catch ( Exception ex ) {
-	      System.out.println("Exception:" + ex.getMessage());
+	    	return false;
 	    }
-	   
-	    return result.toString();
 	}
 	 
 }
