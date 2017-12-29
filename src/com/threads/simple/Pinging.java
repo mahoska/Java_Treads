@@ -29,7 +29,7 @@ public class Pinging {
 	    	  result.append(address + "--<isn't reachable>");
 	      }
 	    } catch(UnknownHostException ex){
-	    	  System.out.println(ex.toString()); 
+	    	  //System.out.println(ex.toString()); 
 	    }
 	    catch ( Exception ex ) {
 	      System.out.println("Exception:" + ex.getMessage());
