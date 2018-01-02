@@ -1,7 +1,6 @@
 package com.threads.simple;
 
-import java.io.IOException;
-import java.io.PipedWriter;
+import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -22,10 +21,27 @@ public class Sender extends Thread{
     
 	 private transient int priority; 
 	 private transient String pingResourse;
+	 private boolean statusResourse;
 	 
 	 
+	public String getResult() {
+		return "Thread №" + id + " - " + 
+				new Date(System.currentTimeMillis()) +" - " + 
+				this.getPingResourse() + " - " + 
+				(this.getStatusResourse() ?  "--<is reachable>"  : "--<isn't reachable>");
+	}
 	   
-	 Sender(Semaphore sem, String  pingResourse, int priority, long startTime, int workTime){
+	 public boolean getStatusResourse() {
+		 return this.statusResourse;
+	}
+
+
+	public void setStatusResourse(boolean status) {
+		this.statusResourse = status;
+	}
+
+
+	Sender(Semaphore sem, String  pingResourse, int priority, long startTime, int workTime){
 	     this.sem=sem;
 	     this.setPriority(priority);
 	     this.setPingResourse(pingResourse);
@@ -35,26 +51,14 @@ public class Sender extends Thread{
 	  }
 		 
 	 
-//	 public int getPriority() {
-//			return priority;
-//	}
-//
-//	public void setPriority(int priority) {
-//			this.priority = priority;
-//	}
-
-	public String getPingResourse() {
+	 public String getPingResourse() {
 			return pingResourse;
 	}
 
 	public void setPingResourse(String pingResourse) {
 			this.pingResourse = pingResourse;
 	}
-	
-	
 
-	
-    
     public long getStartTime() {
 		return startTime;
 	}
@@ -75,38 +79,40 @@ public class Sender extends Thread{
 	}
 
 
-//	public Semaphore getSem() {
-//		return sem;
-//	}
-//
-//	public void setSem(Semaphore sem) {
-//		this.sem = sem;
-//	}
-
 	public void run(){
         try{
-        	
-           // System.out.println(id + " ожидает разрешение");
             sem.acquire();
- 
-            long test ;
-	        while(( (new Date().getTime()-startTime))/1000 != workTime) { 
-
-	            Pinging ping = new Pinging();
-	            ping.setAddress(pingResourse);
-	            //address + "--<is reachable>"
-	            //address + "--<isn't reachable>"
-	    		System.out.println("Thread №" + id + " - " + new Date(System.currentTimeMillis())+" - "+ping.testingAvailabilityOfResource());
-	    		
-	    		 TimeUnit.MILLISECONDS.sleep(interval);
-	        }  
-
+	        while(((new Date().getTime()-startTime))/1000 <=workTime && !this.isInterrupted()) { 
+	        	//if(!Thread.interrupted ()) {
+		            Pinging ping = new Pinging();
+		            ping.setAddress(pingResourse);	            
+		            this.setStatusResourse(ping.testingAvailabilityOfResource());
+		            System.out.println(this.getResult());
+		            System.out.println();
+		    		TimeUnit.MILLISECONDS.sleep(interval);
+	        	//}
+	        } 
+	        System.out.println("thread №"+ id + " stoped");
+	        threadCount--;
+	        
+	        if(threadCount==0)
+	        	System.out.println("All threads stoped");
+        }catch(UnknownHostException ex){ 
+        	System.out.println("Thread №" + id + " - " + 
+    				new Date(System.currentTimeMillis()) +" - " + 
+    				this.getPingResourse() + " - " + 
+    				" - unknown Host");
+        	System.out.println();
+    		this.interrupt();
+    		threadCount--;
+    		//sem.release();
+    		//return;
         }catch(InterruptedException e) {
-        	System.out.println(e.getMessage() + " Sender sleep interrupted");
-        }
-       
-        
-        //System.out.println(id + " освобождает разрешение");
+        	this.interrupt();
+        	threadCount--;
+        	// sem.release();
+        	//return;
+        }   
         
         sem.release();
     }
