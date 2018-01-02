@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 
 public class Main {
 
@@ -50,29 +48,45 @@ public class Main {
 			 }while(!buffer.equals("y") && !buffer.equals("n"));
 		}
 		
+		
+
 		int listeningTime = 60;
 		int maxCountThread = 3;
+		int outputInterval = 5000;
 		
-		 Semaphore sem = new Semaphore(maxCountThread); 
-		 long  start =  new Date().getTime();
+		Semaphore sem = new Semaphore(maxCountThread); 
+		long  start =  new Date().getTime();
 		
 		ArrayList<Sender> threads = new ArrayList<Sender>();
-	
-	    for( Map<String, String> res : resourse) {
-			threads.add( new Sender(sem, res.get("address"), Integer.parseInt(res.get("priority")), start, listeningTime));
+		
+	    for(Map<String, String> res : resourse) {
+			threads.add(new Sender(sem, res.get("address"), Integer.parseInt(res.get("priority"))));
 			threads.get(threads.size()-1).start();
 		}
 	    
-		System.out.println("All threads created");
+	    while((new Date().getTime()-start)/1000 <=listeningTime) {
+	    	 while(Sender.results.peek()!=null){
+	             System.out.println(Sender.results.pop());
+	         }
+	    	 System.out.println();
+	    	 
+	    	 TimeUnit.MILLISECONDS.sleep(outputInterval);
+	    }
+	    
+	    for(Sender thread : threads) {
+	    	if(!thread.isInterrupted()) {
+	    		thread.interrupt();
+	    	}
+	    }
+	    
+	    System.out.println("Done");
+	    
 	}
-
-
 }
-
-
 
 
 //https://metanit.com/java/tutorial/8.1.php
 //https://docs.oracle.com/javase/tutorial/essential/concurrency/procthread.html
 //http://www.javacodex.com/Networking/Ping-IP-Address
 //https://habrahabr.ru/post/164487/
+//https://sites.google.com/site/stas0nxlam/home/parallelnoe-vypolnenie
